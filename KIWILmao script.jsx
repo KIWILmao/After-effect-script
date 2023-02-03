@@ -117,7 +117,8 @@
         }
         function Timeremap(){
             app.beginUndoGroup("My Process");
-            comp = app.project.activeItem;
+            var comp = app.project.activeItem;
+            var selectedLayer = comp.selectedLayers[0]; 
             if(comp == null)
             {
                 alert("NO COMP IS SELECTED");
@@ -127,24 +128,29 @@
                 alert("SELECT LAYER!!");
             }
             var framerate =1/comp.frameRate;
-        
-            var outpoint = comp.selectedLayers[0].outPoint - framerate;
-            var inpoint = comp.selectedLayers[0].inPoint;
-            comp.selectedLayers[0].timeRemapEnabled = true;
-            var startTime = comp.selectedLayers[0].property("ADBE Time Remapping").keyTime(1)
-            if(inpoint != startTime){
-                comp.selectedLayers[0].property("ADBE Time Remapping").removeKey(1);
-            }
-            comp.selectedLayers[0].property("ADBE Time Remapping").addKey(inpoint);
-            comp.selectedLayers[0].property("ADBE Time Remapping").addKey(outpoint);
-            comp.selectedLayers[0].property("ADBE Time Remapping").removeKey(3);
+            var outpoint = selectedLayer.outPoint - framerate;
+            var inpoint = selectedLayer.inPoint;
+            selectedLayer.timeRemapEnabled = true;
+            selectedLayer.property("ADBE Time Remapping").addKey(inpoint);
+            selectedLayer.property("ADBE Time Remapping").addKey(outpoint);
             var easeIn = new KeyframeEase(0,25);
-            // var easeOut = new KeyframeEase(1,1);
-        
-            comp.selectedLayers[0].property("ADBE Time Remapping").setTemporalEaseAtKey(1, [easeIn]);
-            comp.selectedLayers[0].property("ADBE Time Remapping").setTemporalEaseAtKey(2, [easeIn]);
+            var numKeyframes = selectedLayer.property("ADBE Time Remapping").numKeys;
+            var keyTime = selectedLayer.property("ADBE Time Remapping").keyTime(1);
+            var valueAtKeyframe = selectedLayer.property("ADBE Time Remapping").valueAtTime(keyTime, true);
+            if(numKeyframes == 4){
+                selectedLayer.property("ADBE Time Remapping").removeKey(1);
+                selectedLayer.property("ADBE Time Remapping").removeKey(3);
+                
+            }
+
+            else if(numKeyframes == 3 && valueAtKeyframe == 0){
+                selectedLayer.property("ADBE Time Remapping").removeKey(3);   
+            }
+            selectedLayer.property("ADBE Time Remapping").setTemporalEaseAtKey(1, [easeIn]);
+            selectedLayer.property("ADBE Time Remapping").setTemporalEaseAtKey(2, [easeIn]);
             comp.frameBlending = true;
-            comp.selectedLayers[0].frameBlendingType = FrameBlendingType.PIXEL_MOTION;
+            selectedLayer.frameBlendingType = FrameBlendingType.PIXEL_MOTION;
+
             app.endUndoGroup(); 
         }
         
