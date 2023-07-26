@@ -53,15 +53,33 @@
             {
                 alert("Select the layer");
             }
-            var outpoint = comp.selectedLayers[0].outPoint;
-            var inpoint = comp.selectedLayers[0].inPoint;
-            var duration = outpoint - inpoint;
-            var selectedlayer = comp.selectedLayers[0];
+
+            var selectedLayers = comp.selectedLayers
+            var duration = 0
+            var outpoint = 0
+            var index = Infinity
+            var inpoint = Infinity
+            var topLayer
+
+            for(var i = 0 ; i<selectedLayers.length; i++){
+                if(selectedLayers[i].inPoint < inpoint){
+                    inpoint = selectedLayers[i].inPoint;
+                }
+                if(selectedLayers[i].outPoint > outpoint){
+                    outpoint = selectedLayers[i].outPoint;
+                }
+                if(selectedLayers[i].index < index){
+                    index = selectedLayers[i].index
+                    topLayer = selectedLayers[i]
+                }
+            }
+            
+            duration += outpoint - inpoint            
             var solidLayer = comp.layers.addSolid([1,1,1],"Adjustmentlayer",comp.width,comp.height,1,duration);
             solidLayer.adjustmentLayer = true;
             solidLayer.inPoint = inpoint;
             solidLayer.label = 5;
-            comp.layer(1).moveBefore(selectedlayer);   
+            comp.layer(1).moveBefore(topLayer);   
             app.endUndoGroup();
         }
         
@@ -87,6 +105,7 @@
             var nullLayer = comp.layers.addNull(duration);
             nullLayer.inPoint = inpoint;
             comp.layer(1).moveBefore(selectedlayer);
+            selectedlayer.parent = nullLayer
             app.endUndoGroup();  
         
         }
